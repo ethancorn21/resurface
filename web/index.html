@@ -356,7 +356,7 @@ body.blk .yscrub { display: none; }  /* the block's caption sits where the year 
 .yscrub .ys-head { text-shadow: var(--halo); }
 .yscrub .ys-row { filter: var(--halo-f); }
 .ys { --ys-text: var(--ink); --ys-text-2: var(--ink-2); --tk: var(--hair); --tk-stop: var(--ink-2); --tk-on: var(--survey);
-  display: grid; gap: 10px; touch-action: none; user-select: none; -webkit-user-select: none; }
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; touch-action: none; user-select: none; -webkit-user-select: none; }  /* minmax: a long map name ellipsizes instead of widening the ruler past the screen */
 .ys-head { display: grid; justify-items: center; gap: 2px; text-align: center; color: var(--ys-text); }
 .ys-year { font: 400 var(--year-size)/.95 var(--title); font-variant-numeric: tabular-nums; letter-spacing: -.015em; }
 .ys-name { max-width: 100%; font: italic 17px/1.3 var(--title); color: var(--ys-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
