@@ -19,8 +19,8 @@
     ['--on-map', 'Lettering on the map'],
   ];
   const FONTS = {
-    '--title': ['"Old Standard TT", "Century Schoolbook", Georgia, serif', 'Georgia, serif', '"Iowan Old Style", Georgia, serif', '"Times New Roman", serif', '"Helvetica Neue", Arial, sans-serif'],
-    '--label': ['"Archivo Narrow", "Arial Narrow", Arial, sans-serif', '"Helvetica Neue", Arial, sans-serif', 'ui-monospace, Menlo, monospace', '"Old Standard TT", Georgia, serif'],
+    '--title': ['"Inter", -apple-system, "Helvetica Neue", Arial, sans-serif', '"Old Standard TT", "Century Schoolbook", Georgia, serif', 'Georgia, serif', '"Iowan Old Style", Georgia, serif', '"Times New Roman", serif', '"Helvetica Neue", Arial, sans-serif'],
+    '--label': ['"Inter", -apple-system, "Helvetica Neue", Arial, sans-serif', '"Archivo Narrow", "Arial Narrow", Arial, sans-serif', '"Helvetica Neue", Arial, sans-serif', 'ui-monospace, Menlo, monospace', '"Old Standard TT", Georgia, serif'],
   };
   // [token or TUNE key, label, min, max, step, unit]
   const KNOBS = [
@@ -30,11 +30,13 @@
     ['ticks', 'Ticks across (desktop)', 16, 160, 2, ''], ['ticksPhone', 'Ticks across (phone)', 12, 100, 2, ''],
     ['sigma', 'Swell width (ticks)', .5, 10, .25, ''], ['glide', 'Glide speed', .04, .6, .01, ''], ['follow', 'Drag follow', .1, 1, .05, ''],
   ];
+  // 2026-10-17: the page's own palette is 'Neutral' (cool greys, white panel); 'Plate paper' is the cream it replaced
   const PRESETS = {
-    'Plate': {},
-    'Bone': { '--sheet': '#FBFBFB', '--paper': '#F2F2F2', '--paper-2': '#E8E8E8', '--ink': '#1A1A1A', '--ink-2': '#606060', '--hair': '#D9D9D9', '--rule': '#8A8A8A', '--survey': '#CE2E4E' },
-    'Engraving': { '--sheet': '#FDFDFD', '--paper': '#F6F3EE', '--paper-2': '#ECE6DC', '--ink': '#523727', '--ink-2': '#8C7462', '--hair': '#E3D9CC', '--rule': '#A89482', '--survey': '#B3261E' },
-    'Night': { '--sheet': '#171412', '--paper': '#0E0C0A', '--paper-2': '#221E1A', '--ink': '#EFE6DC', '--ink-2': '#A89F95', '--hair': '#3A332D', '--rule': '#6E655C', '--survey': '#E2697F', '--space': '#07080B' },
+    'Neutral': {},
+    'Stone': { '--sheet': '#FAFAF9', '--paper': '#F2F1EF', '--paper-2': '#E6E4E0', '--ink': '#1C1917', '--ink-2': '#57534E', '--hair': '#E7E5E4', '--rule': '#A8A29E' },
+    'Graphite': { '--sheet': '#17191D', '--paper': '#0F1114', '--paper-2': '#262930', '--ink': '#EEF0F3', '--ink-2': '#9BA1AB', '--hair': '#2C3036', '--rule': '#5A606A', '--edge': 'rgba(255, 255, 255, .14)' },
+    'Plate paper': { '--sheet': '#F8F4E8', '--paper': '#F3EDDC', '--paper-2': '#EAE2CC', '--ink': '#2B2724', '--ink-2': '#6B625A', '--hair': '#D9D0BD', '--rule': '#8E8478', '--space': '#10141C',
+      '--title': '"Old Standard TT", "Century Schoolbook", Georgia, serif', '--label': '"Archivo Narrow", "Arial Narrow", Arial, sans-serif' },
   };
   const state = (() => { try { return JSON.parse(ls.get('aw.dev') || '{}'); } catch { return {}; } })();
   state.vars = state.vars || {}; state.tune = state.tune || {};
@@ -123,14 +125,14 @@
     $$('[data-f]').forEach(s => { s.value = cur(s.dataset.f); });
   };
   $$('[data-pre]').forEach(b => b.onclick = () => {
-    for (const k of COLORS.map(c => c[0])) { delete state.vars[k]; root.style.removeProperty(k); }
+    for (const k of new Set([...COLORS.map(c => c[0]), ...Object.values(PRESETS).flatMap(Object.keys)])) { delete state.vars[k]; root.style.removeProperty(k); }
     Object.assign(state.vars, PRESETS[b.dataset.pre]);
     applyAll(); save(); refresh();
   });
   el.querySelector('[data-a="reset"]').onclick = () => {
     for (const k of Object.keys(state.vars)) root.style.removeProperty(k);
     for (const k of Object.keys(state.tune)) TUNE[k] = base[k];
-    state.vars = {}; state.tune = {}; delete state.layout; setLayout('float', true); save(); refresh(); syncLay(); rebuild();
+    state.vars = {}; state.tune = {}; delete state.layout; setLayout('card', true); save(); refresh(); syncLay(); rebuild();
   };
   el.querySelector('[data-a="export"]').onclick = () => {
     const lay = LAYOUTS.find(l => document.body.classList.contains('lay-' + l));

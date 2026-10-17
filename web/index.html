@@ -16,21 +16,27 @@
    and .lay-column (a full-height column at the left). Every colour and size is a token, so the dev canvas (?dev=1) reaches it. */
 body { margin: 0; } img { max-width: 100%; } [hidden] { display: none !important; }
 :root {
-  --paper: #F3EDDC; --paper-2: #EAE2CC; --sheet: #F8F4E8; --ink: #2B2724; --ink-2: #6B625A; --rule: #8E8478;
-  --hair: #D9D0BD;              /* hairline rules, resting ticks on paper */
+  /* 2026-10-17 (Ethan: "the tan cream is not that good of a color palette", "more tastefully modern"): cool neutral surfaces,
+     one sans face, the survey red kept for the ink and the state. The old plate paper is the dev canvas preset "Plate". */
+  --paper: #F2F3F5; --paper-2: #E7E9ED; --sheet: #FFFFFF; --ink: #16181C; --ink-2: #5C616B; --rule: #9AA0AA;
+  --hair: #E3E5E9;              /* hairline rules, resting ticks on paper */
   --survey: #CE2E4E;            /* 1848 plate ink, as on the ore bodies of USGS plates: the state colour */
-  --space: #10141C;             /* round the globe */
-  --on-map: #FBF8F0;            /* type and ticks lettered straight on the map */
+  --space: #0B0D11;             /* round the globe */
+  --on-map: #FFFFFF;            /* type and ticks lettered straight on the map */
+  --edge: rgba(16, 18, 22, .16);  /* the 1px edge round every surface on the map (a review: "the sidebar has no edge") */
+  --lift: 0 12px 32px rgba(6, 8, 12, .3), 0 1px 3px rgba(6, 8, 12, .18);
+  --r: 14px; --r-s: 9px;        /* corner radius: surfaces, controls */
+  --pin-open: #FFFFFF;          /* the newer, rougher pins are open (white), the older, truer ones solid survey red */
   --halo-a: .6;                 /* how dark the halo round lettering on the map is: a cartographer's halo, not a band or a box */
   --halo: 0 1px 1px rgba(8, 7, 6, calc(var(--halo-a) * 1.1)), 0 0 8px rgba(8, 7, 6, calc(var(--halo-a) * .9)), 0 0 26px rgba(8, 7, 6, calc(var(--halo-a) * .55));
   --halo-f: drop-shadow(0 1px 1px rgba(8, 7, 6, calc(var(--halo-a) * 1.1))) drop-shadow(0 0 7px rgba(8, 7, 6, calc(var(--halo-a) * .8)));
   --scrim-a: .62;               /* the soft shade under the lettering (Ethan 2026-10-16: "add a gradiant behind the text"): eased, no edge */
-  --scrim-rgb: 12, 10, 8;
+  --scrim-rgb: 10, 12, 16;
   --on-map-red: color-mix(in srgb, var(--survey) 72%, #fff);  /* the plate red, lifted to read on the shade */
   --mauve: #D8BCD5; --mauve-2: #B996B6; --pink: #F2B5C4; --aqua: #9ED8D8; --sage: #C4D9A6; --lav: #CFC6E0; --ochre: #F2C48D;  /* swatches only */
-  --title: "Old Standard TT", "Century Schoolbook", "Iowan Old Style", Georgia, serif;
-  --label: "Archivo Narrow", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --title-size: 28px; --card-w: 340px; --col-w: 360px; --float-w: 360px; --gap: 20px;
+  --title: "Inter", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --label: "Inter", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --title-size: 28px; --card-w: 360px; --col-w: 360px; --float-w: 360px; --gap: 16px;
   --year-size: 64px; --tick-peak: 40px; --tick-base: 7px; --tick-stop: 13px;
   color-scheme: light;
 }
@@ -242,13 +248,15 @@ details.about p { margin: 8px 0 0; }
 .marker.t4 { z-index: 4; } .marker.t3 { z-index: 3; } .marker.t2 { z-index: 2; } .marker.t1 { z-index: 1; }
 /* --mks is the tier colour the pin silhouette is painted with (.pin below); the plain background stays for .scan */
 .marker .sq { width: 11px; height: 11px; border: 1.5px solid var(--ink); background: var(--survey); --mks: var(--survey); }
-/* tiers by score (TIERS in the script): bigger and darker = older overlays that line up with the ground.
-   plain = no overlay 150+ years old (LiDAR or the photograph only), shown only with More sites */
-.marker.t4 .sq { width: 14px; height: 19px; border-width: 2px; background: #8A1230; --mks: #8A1230; }
-.marker.t3 .sq { width: 12px; height: 17px; background: var(--survey); --mks: var(--survey); }
-.marker.t2 .sq { width: 11px; height: 15px; background: #E2697F; --mks: #E2697F; }
-.marker.t1 .sq { width: 9px; height: 13px; background: #F4B4C0; --mks: #F4B4C0; }
-.marker.plain .sq { width: 7px; height: 10px; border-width: 1.5px; background: var(--sheet); --mks: var(--sheet); }
+/* tiers by score (TIERS in the script): bigger = older overlays that line up with the ground. 2026-10-17 (a review: "age is
+   shown as shades of red on tiny pins... you can't tell the shades apart"): size and fill instead of tint. t4/t3 solid
+   survey red, t2/t1 open (white), each tier a clear step in size; PIN_W/PIN_H in the script hold the same sizes.
+   plain = no overlay 150+ years old (LiDAR or the photograph only), shown only with More sites: small and grey */
+.marker.t4 .sq { width: 20px; height: 27px; background: var(--survey); --mks: var(--survey); }
+.marker.t3 .sq { width: 15px; height: 21px; background: var(--survey); --mks: var(--survey); }
+.marker.t2 .sq { width: 12px; height: 17px; background: var(--pin-open); --mks: var(--pin-open); }
+.marker.t1 .sq { width: 10px; height: 14px; background: var(--pin-open); --mks: var(--pin-open); }
+.marker.plain .sq { width: 8px; height: 11px; border-width: 1.5px; background: var(--rule); --mks: var(--rule); }
 /* the plumb bob: the 72x100 svg scaled to the tier box, filled with the tier colour, one non-scaling ink outline at every
    size (crisp on retina). Must stay after the tier rules above: equal specificity,
    the .pin declarations win by order. */
@@ -258,10 +266,10 @@ details.about p { margin: 8px 0 0; }
 .marker[data-off] { visibility: hidden; }
 .marker[data-off] .sq, .marker[data-off] .tag { opacity: 0; }
 .marker .sq.pin svg, .tiers .sq.pin svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.marker .sq.pin path, .tiers .sq.pin path { fill: var(--mks, var(--survey)); stroke: var(--ink); stroke-width: 1.2px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.marker .sq.pin path, .tiers .sq.pin path { fill: var(--mks, var(--survey)); stroke: #0B0C0E; stroke-width: 1.5px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
 .marker.t4 .tag { font-weight: 700; }
 /* the pins read as things to open (Ethan 2026-10-17: "not clear if the markers are clickable"): an invisible hit area round
-   each 9-19 px pin (40 px under a finger), and on a mouse the pin lifts and shows its sign. The declutter hides a sign by
+   each 10-27 px pin (40 px under a finger), and on a mouse the pin lifts and shows its sign. The declutter hides a sign by
    data-tag (syncMarkers), not an inline style, so hovering the pin can bring it back. */
 .marker .sq { position: relative; transform-origin: 50% 100%; transition: transform .12s; }
 .marker .sq::after { content: ""; position: absolute; left: 50%; top: 50%; width: 28px; height: 28px; transform: translate(-50%, -50%); }
@@ -274,9 +282,10 @@ details.about p { margin: 8px 0 0; }
 }
 .tiers { display: flex; align-items: center; gap: 6px; font: 11.5px var(--label); letter-spacing: .04em; color: var(--ink-2); }
 .tiers .sq { display: inline-block; border: 1.5px solid var(--ink); }
-.tiers .t4 { width: 14px; height: 19px; background: #8A1230; --mks: #8A1230; } .tiers .t3 { width: 12px; height: 17px; background: var(--survey); --mks: var(--survey); }
-.tiers .t2 { width: 11px; height: 15px; background: #E2697F; --mks: #E2697F; } .tiers .t1 { width: 9px; height: 13px; background: #F4B4C0; --mks: #F4B4C0; }
-.tiers .plain { width: 7px; height: 10px; background: var(--sheet); --mks: var(--sheet); }
+.tiers .t4 { width: 20px; height: 27px; --mks: var(--survey); } .tiers .t3 { width: 15px; height: 21px; --mks: var(--survey); }
+.tiers .t2 { width: 12px; height: 17px; --mks: var(--pin-open); } .tiers .t1 { width: 10px; height: 14px; --mks: var(--pin-open); }
+.tiers .plain { width: 8px; height: 11px; --mks: var(--rule); }
+.tiers { align-items: flex-end; } .tiers > span:not(.sq) { align-self: center; margin-left: 4px; }
 /* the label is a street sign in the EU direction-sign style (Wegweiser): a box whose left end comes to a point, aimed at
    the pin, centred on the pin's head (36% down its box); the .scan marker has no pin, so its sign is centred on the
    square instead. The ink outline is the sign itself clipped to the pointed shape with the paper face (::before) clipped
@@ -287,8 +296,9 @@ details.about p { margin: 8px 0 0; }
 .marker .tag::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--sheet);
   clip-path: polygon(1.4px 50%, 10.4px 1px, calc(100% - 1px) 1px, calc(100% - 1px) calc(100% - 1px), 10.4px calc(100% - 1px)); }
 .marker.scan .tag { top: 50%; }
+.marker .tag small { margin-left: 6px; font: 500 10.5px/20px var(--label); letter-spacing: .02em; color: var(--ink-2); font-variant-numeric: tabular-nums; }
 
-.maplibregl-ctrl-attrib { font: 10.5px var(--label) !important; background: rgba(248, 244, 232, .85) !important; }
+.maplibregl-ctrl-attrib { font: 10.5px var(--label) !important; background: color-mix(in srgb, var(--sheet) 88%, transparent) !important; }
 .maplibregl-ctrl-group { background: var(--sheet) !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
 .maplibregl-ctrl-group button + button { border-top: 1px solid var(--hair) !important; }
 
@@ -359,12 +369,78 @@ body.blk .yscrub { display: none; }  /* the block's caption sits where the year 
 .ys-ticks.present .ys-tk.on { background: var(--tk-stop); }
 .ys-end { background: none; border: 0; padding: 4px 0; font: 600 11px/1 var(--label); letter-spacing: .16em; text-transform: uppercase; font-variant-numeric: tabular-nums; color: var(--ys-text-2); cursor: pointer; white-space: nowrap; }
 .ys .ys-end:hover { text-decoration: underline; text-underline-offset: 3px; }
+/* ---------- 2026-10-17 modern pass (Ethan: "change the aesthetics... more tastefully modern"; a review he sent: "the sidebar
+   has no edge. The navy panel sits on a navy ocean... give it a clearly different value and a 1px border"). One sans face, no
+   italics, controls in sentence case as pills (filters) and segmented switches (views); every surface on the map (the panel,
+   the zoom buttons, the block sheet, the credits) is white with a 1px edge and a soft lift, so it reads off ocean and aerial
+   alike. The big year still floats on the map. */
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+.tagline, .entry .desc, .site-aka, .fit, .source, .lede, .ys-name, .search input[type=search]::placeholder, .mt-name i,
+.mpop .mp-t span, .track-none, .loading, .caption p, .key i, .status { font-style: normal; }
+body.lay-card .panel { border: 1px solid var(--edge); border-radius: var(--r); box-shadow: var(--lift); overflow: hidden; }
+body.lay-column .panel { border-right: 1px solid var(--edge); box-shadow: var(--lift); }
+body.lay-card .sheet { border: 1px solid var(--edge); border-radius: var(--r); box-shadow: var(--lift); overflow: hidden; }
+.panel-head { padding: 18px 20px 0; }
+.panel-body { padding: 14px 20px 20px; }
+.wordmark { font: 700 13px/1.2 var(--label); letter-spacing: .14em; color: var(--ink); }
+.tagline { margin-top: 3px; font: 400 13px/1.4 var(--title); }
+.lede { font-size: 14px; line-height: 1.5; }
+/* eyebrow labels: small caps-height, semibold, a little tracking */
+.section-title, .facts dt, .group-title { font: 600 11px/1.4 var(--label); letter-spacing: .06em; }
+.group-title { margin-top: 18px; padding-bottom: 4px; border-bottom: 1px solid var(--hair); }
+.back, details.more > summary, details.about summary, details.align summary, .check, .row label { font: 500 13px var(--label); letter-spacing: 0; text-transform: none; }
+.back { padding: 2px 0; }
+.check input { width: 15px; height: 15px; }
+/* lists: rows that light up, no rules between them */
+.entry { border-bottom: 0; border-radius: var(--r-s); padding: 9px 10px; margin: 0 -10px; width: calc(100% + 20px); }
+.entry:hover { background: var(--paper); }
+.entry:hover .name { text-decoration: none; }
+.entry .name { font-size: 15px; font-weight: 600; letter-spacing: -.005em; }
+.entry .desc { font-size: 12.5px; margin-top: 1px; }
+.entry .yr { font: 500 12.5px var(--label); letter-spacing: 0; }
+/* the kind filter: pills, the chosen one filled */
+.kinds { gap: 6px; }
+.kinds button { padding: 7px 11px; border: 1px solid var(--hair); border-radius: 999px; background: var(--sheet); color: var(--ink);
+  font: 500 12.5px/1 var(--label); letter-spacing: 0; text-transform: none; white-space: nowrap; }
+.kinds button:hover { border-color: var(--rule); }
+.kinds button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--sheet); }
+.tiers { font: 400 12.5px var(--label); letter-spacing: 0; }
+.search input[type=search] { padding: 9px 12px; border: 1px solid transparent; border-radius: var(--r-s); background: var(--paper); font: 400 14.5px var(--title); }
+.search input[type=search]:focus-visible { border: 1px solid var(--rule); background: var(--sheet); }
+/* a site */
+.site-title { font: 650 var(--title-size)/1.1 var(--title); letter-spacing: -.02em; }
+.site-aka { font-size: 13.5px; }
+.facts { grid-template-columns: 70px minmax(0, 1fr); gap: 12px 14px; align-items: center; }
+.facts dd { font-size: 14px; }
+.facts dd.num { font-weight: 600; }
+/* views: segmented switches */
+.tabs, .seg { display: inline-flex; flex-wrap: nowrap; gap: 2px; padding: 2px; background: var(--paper-2); border-radius: var(--r-s); max-width: 100%; vertical-align: middle; }
+.tabs button, .seg button { padding: 6px 12px; border: 0; border-radius: 7px; color: var(--ink-2); font: 500 12.5px/1 var(--label); letter-spacing: 0; text-transform: none; }
+.tabs button[aria-pressed="true"], .seg button[aria-pressed="true"] { background: var(--sheet); color: var(--ink); box-shadow: 0 1px 2px rgba(16, 18, 22, .16), 0 0 0 .5px rgba(16, 18, 22, .08); }
+.tabs button:disabled, .seg button:disabled { color: var(--rule); }
+/* sliders: a rounded track and a white knob */
+input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: var(--hair); }
+input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--hair); }
+input[type=range]::-webkit-slider-thumb { width: 18px; height: 18px; margin-top: -7px; background: var(--sheet); border: 1px solid var(--rule); box-shadow: 0 1px 3px rgba(16, 18, 22, .25); }
+input[type=range]::-moz-range-thumb { width: 18px; height: 18px; background: var(--sheet); border: 1px solid var(--rule); box-shadow: 0 1px 3px rgba(16, 18, 22, .25); }
+input[type=range] { height: 22px; }
+.val { font: 500 12.5px var(--label); letter-spacing: 0; color: var(--ink); }
+.pad button, .tools button { border-radius: 8px; }
+.tools button { font: 500 12.5px var(--label); letter-spacing: 0; text-transform: none; }
+/* on the map */
+.marker .tag { font-weight: 600; letter-spacing: .04em; }
+.maplibregl-ctrl-group { border: 1px solid var(--edge) !important; border-radius: var(--r-s) !important; box-shadow: var(--lift) !important; overflow: hidden; }
+.maplibregl-ctrl-attrib { border-radius: 6px; }
+.ys-year { font-weight: 600; letter-spacing: -.035em; }
+.ys-name { font-size: 15px; font-weight: 500; }
+.ys-end { font: 600 11px/1 var(--label); letter-spacing: .06em; }
+.sheet-close { border: 1px solid var(--hair); border-radius: 999px; padding: 6px 12px; text-transform: none; letter-spacing: 0; font: 500 12.5px var(--label); }
 @media (max-width: 760px) {
   :root { --peek: 40vh; }
   /* the layouts' desktop placement goes; the sheet's own transform stays on .panel so .panel.open still wins */
   body.lay-card .panel, body.lay-column .panel, body.lay-float .panel { top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: none; border: 0;
     background: var(--sheet); color: var(--ink); text-shadow: none; -webkit-mask-image: none; mask-image: none; }
-  body.lay-float .panel { --ink: #2B2724; --ink-2: #6B625A; --hair: #D9D0BD; --rule: #8E8478; }
+  body.lay-float .panel { --ink: #16181C; --ink-2: #5C616B; --hair: #E3E5E9; --rule: #9AA0AA; }  /* :root's values (the float panel re-inks for the map) */
   body.lay-float .site-title { font-size: var(--title-size); }
   body.lay-float .panel-body { padding: 2px 22px 22px; }
   .panel { height: 84%; padding-bottom: env(safe-area-inset-bottom, 0px); overflow: hidden;
@@ -460,15 +536,52 @@ body.blk .yscrub { display: none; }  /* the block's caption sits where the year 
   .sheet-main { display: block; margin: 0; border: 0; }
   .stage { position: absolute; inset: 0; }
   .explain { display: none; position: absolute; z-index: 2; left: 10px; right: 10px; top: calc(112px + env(safe-area-inset-top, 0px)); max-height: 55%;
-    background: rgba(248, 244, 232, .97); border: 1px solid var(--ink); box-shadow: 0 3px 10px rgba(16, 20, 28, .3); }
+    background: color-mix(in srgb, var(--sheet) 97%, transparent); border: 1px solid var(--edge); border-radius: var(--r); box-shadow: var(--lift); }
   .sheet.keyopen .explain { display: flex; }
   .bchips { display: flex; position: absolute; z-index: 2; right: 10px; top: calc(66px + env(safe-area-inset-top, 0px)); gap: 6px; }
-  .bchips button { background: rgba(248, 244, 232, .94); border: 1px solid var(--ink); color: var(--ink); font: 600 11px/1 var(--label); letter-spacing: .07em; text-transform: uppercase; padding: 8px 10px; cursor: pointer; }
+  .bchips button { background: color-mix(in srgb, var(--sheet) 94%, transparent); border: 1px solid var(--edge); border-radius: 999px; color: var(--ink); font: 600 11px/1 var(--label); letter-spacing: .07em; text-transform: uppercase; padding: 8px 10px; cursor: pointer; }
   .bchips button[aria-pressed="true"] { background: var(--ink); color: var(--sheet); }
   .hint { bottom: 8px; right: 10px; }
   .compass { bottom: 10px; left: 10px; width: 44px; height: 44px; }
   body.blk .panel, body.blk .mtop, body.blk .mpop { z-index: 4; }
   body.blk .mera { display: none; }
+}
+/* ---------- phones, 2026-10-17 modern pass: the sheet is a rounded white surface with an edge; at home the kind pills ride in
+   the peek in one sideways row; in a site the view switches (Aerial, LiDAR, 3D, the old map's look) are pills at the top of
+   the peek, above the year scrubber, so nothing that changes the view needs a scroll to reach. */
+@media (max-width: 760px) {
+  body.lay-card .panel, body.lay-column .panel, body.lay-float .panel { border-top: 1px solid var(--edge); border-radius: 16px 16px 0 0;
+    box-shadow: 0 -8px 28px rgba(6, 8, 12, .22); }
+  .grab::before { width: 38px; height: 5px; border-radius: 3px; background: var(--hair); }
+  .lede { font-size: 13.5px; line-height: 1.45; }
+  #body > .kinds { order: -1; flex: none; flex-wrap: nowrap; overflow-x: auto; margin: 0 -18px; padding: 2px 18px 4px; scrollbar-width: none; touch-action: pan-x; }
+  #body > .kinds::-webkit-scrollbar { display: none; }
+  .kinds button { flex: none; padding: 9px 13px; font-size: 13.5px; }
+  .search input[type=search] { padding: 10px 12px; }
+  .mtop { border: 1px solid var(--edge); border-radius: 12px; box-shadow: var(--lift); overflow: hidden; }
+  .mt-name b { font-weight: 600; font-size: 16px; letter-spacing: -.01em; }
+  .mt-name i { font-style: normal; }
+  .mt-brand { color: var(--ink); letter-spacing: .14em; }
+  .mt-brand .mark { color: var(--survey); }
+  .mera { border-radius: 6px; }
+  .mpop { border: 1px solid var(--edge); border-radius: var(--r); box-shadow: var(--lift); }
+  .mpop .mp-t b { font: 600 11px var(--label); letter-spacing: .06em; }
+  .mp-seg { gap: 2px; padding: 2px; background: var(--paper-2); border-radius: var(--r-s); width: max-content; }
+  .mp-seg button { padding: 8px 14px; border: 0; border-radius: 7px; font: 500 13px/1 var(--label); letter-spacing: 0; text-transform: none; }
+  .mp-seg button[aria-pressed="true"] { background: var(--sheet); box-shadow: 0 1px 2px rgba(16, 18, 22, .16); }
+  .mp-op label { font: 500 13px var(--label); letter-spacing: 0; text-transform: none; }
+  .lensbar { gap: 10px; }
+  .lchips { gap: 6px; border-top: 0; padding-top: 0; }
+  .lchips button { padding: 9px 13px; border: 1px solid var(--hair); border-radius: 999px; background: var(--sheet); color: var(--ink);
+    font: 500 13.5px/1 var(--label); letter-spacing: 0; text-transform: none; }
+  .lchips button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--sheet); }
+  .lchips .lpast { border-color: var(--survey); color: var(--survey); }
+  .lchips .lpast[aria-expanded="true"] { background: var(--survey); color: #fff; border-color: var(--survey); }
+  .lchips .lpast:disabled { border-color: var(--hair); color: var(--rule); }
+  .lchips .gap { flex: 1 1 0; min-width: 0; }
+  .ys-year { font-size: 24px; }
+  .ys-name { font-size: 13.5px; }
+  .bchips button { padding: 8px 12px; text-transform: none; letter-spacing: 0; font: 500 13px/1 var(--label); }
 }
 </style>
 </head>
@@ -546,6 +659,45 @@ if (RELIEF_PM) {
     return { data: t ? new Uint8Array(t.data) : null };
   });
 }
+// the old maps' ink lines (Ethan 2026-10-17: "on a phone the ink is hard to see"; a review: "red ink on green fields fails for
+// colorblind viewers"). The crimson matches the fields' brightness (design/survey-red-ink.md: contrast ~1.5, hue alone), and
+// most line pixels sat at 40-60% alpha before the layer's own opacity. Every ink image is loaded through ink:// instead: line
+// strength is raised (faint grain below ~12% drops out, anything past ~57% is full ink), and a dark outline about a screen
+// pixel and a half wide goes under the red lines (not under the faint hatching and grain, which would darken the whole sheet), so they stand off any ground. Cached per image: the scrubber and the
+// selected map ask for the same file.
+const INK_HALO = [14, 12, 12], INK_HALO_A = 0.6, INK_LINE = 0.6, inkDone = new Map();  // INK_LINE: only ink this strong gets the outline
+const inkUrl = u => 'ink://' + new URL(u, location.href).href;
+function inkProcess(bmp) {
+  const w = bmp.width, h = bmp.height, c = new OffscreenCanvas(w, h), g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(bmp, 0, 0);
+  const im = g.getImageData(0, 0, w, h), d = im.data, n = w * h, a = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const t = Math.min(1, Math.max(0, (d[i * 4 + 3] / 255 - 0.12) / 0.45)); a[i] = t * t * (3 - 2 * t); }
+  // outline radius in sheet pixels: ~1.4 screen pixels at the size a site opens at (about a screen across)
+  const r = Math.max(1, Math.min(3, Math.round(1.4 * Math.max(w, h) / (Math.max(innerWidth, innerHeight) * (devicePixelRatio || 1)))));
+  const tmp = new Float32Array(n), halo = new Float32Array(n);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {  // max filter, rows then columns
+    let m = 0; for (let k = Math.max(0, x - r), e = Math.min(w - 1, x + r); k <= e; k++) if (a[y * w + k] >= INK_LINE && a[y * w + k] > m) m = a[y * w + k];
+    tmp[y * w + x] = m;
+  }
+  for (let x = 0; x < w; x++) for (let y = 0; y < h; y++) {
+    let m = 0; for (let k = Math.max(0, y - r), e = Math.min(h - 1, y + r); k <= e; k++) if (tmp[k * w + x] > m) m = tmp[k * w + x];
+    halo[y * w + x] = m * INK_HALO_A;
+  }
+  for (let i = 0; i < n; i++) {  // the red over its outline
+    const ai = a[i], hi = halo[i] * (1 - ai), ao = ai + hi, p = i * 4;
+    if (ao <= 0) { d[p + 3] = 0; continue; }
+    d[p] = (d[p] * ai + INK_HALO[0] * hi) / ao; d[p + 1] = (d[p + 1] * ai + INK_HALO[1] * hi) / ao; d[p + 2] = (d[p + 2] * ai + INK_HALO[2] * hi) / ao;
+    d[p + 3] = ao * 255;
+  }
+  g.putImageData(im, 0, 0);
+  return c.convertToBlob({ type: 'image/png' }).then(b => b.arrayBuffer());
+}
+maplibregl.addProtocol('ink', async (params, abort) => {
+  const url = params.url.slice('ink://'.length);
+  if (!inkDone.has(url)) inkDone.set(url, fetch(url).then(r => { if (!r.ok) throw new Error(`ink ${r.status} ${url}`); return r.blob(); })
+    .then(b => createImageBitmap(b)).then(inkProcess).catch(e => { inkDone.delete(url); throw e; }));
+  return { data: (await inkDone.get(url)).slice(0) };  // a copy: the map may hand its buffer on
+});
 const RELIEF_URL = RELIEF_PM ? 'relief://{z}/{x}/{y}'
   : location.origin + location.pathname.replace(/[^/]*$/, '') + 'tiles/relief/{z}/{x}/{y}.webp';
 // `boxes` (rough, from pipeline/dem_sources.py) decide whether a credit is on screen; `bounds` is their union.
@@ -570,35 +722,37 @@ const KIND = {
   roman_fort: ['Roman fort', 'military'], military_earthwork: ['Military earthwork', 'military'], linear_earthwork: ['Dyke or linear earthwork', 'linear'],
   terp: ['Terp (dwelling mound)', 'terps'], castle: ['Castle', 'mottes'], town: ['Walled town', 'towns'], garden: ['House and garden', 'gardens'],
 };
-const KGROUP = { forts: ['Hillforts', '#CFC6E0'], enclosures: ['Enclosures and henges', '#9ED8D8'], mounds: ['Barrows and mounds', '#F2C48D'],
-  mottes: ['Mottes and castles', '#F2B5C4'], military: ['Roman and military forts', '#D8BCD5'], linear: ['Dykes', '#C4D9A6'], terps: ['Terps', '#EAE2CC'],
-  towns: ['Walled towns', '#A9C4EC'], gardens: ['Lost gardens', '#F0E08A'] };
+// kind groups for the filter chips (labels only: the pins are not coloured by kind, 2026-10-17)
+const KGROUP = { forts: ['Hillforts'], enclosures: ['Enclosures and henges'], mounds: ['Barrows and mounds'],
+  mottes: ['Mottes and castles'], military: ['Roman and military forts'], linear: ['Dykes'], terps: ['Terps'],
+  towns: ['Walled towns'], gardens: ['Lost gardens'] };
 const kindLabel = k => (KIND[k] || [k.replace(/_/g, ' ')])[0];
 const kindGroup = k => (KIND[k] || [0, 'enclosures'])[1];
 const RELIEF_SRC = { US: 'USGS 3DEP', England: 'Environment Agency', Wales: 'Environment Agency (where it covers Wales)', Netherlands: 'AHN', France: 'IGN LiDAR HD' };
-const S = { sites: [], byId: {}, sel: null, ground: 'relief', plateMode: 'ink', plateOpacity: 0.85, align: {}, loaded: new Set(), db: null };
+const S = { sites: [], byId: {}, sel: null, ground: 'relief', plateMode: 'ink', plateOpacity: 1, align: {}, loaded: new Set(), db: null };
 const $ = (sel, el = document) => el.querySelector(sel);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const narrow = () => matchMedia('(max-width: 760px)').matches;
 // two desktop layouts (Ethan 2026-10-16, "build both"): 'card' = the map is the page and the panel one card on it; 'column' =
 // a full-height column at the left. The dev canvas (?dev=1) switches them; ?layout= or the saved pick chooses at load.
-// 2026-10-16 later: a third, 'float' (no panel surface, lettering on the map), the default. Only a deliberate pick (?layout=
-// or the dev canvas) is remembered, under a new key so the earlier automatic 'card' saves do not stick.
+// 2026-10-16 later: a third, 'float' (no panel surface, lettering on the map). Only a deliberate pick (?layout= or the dev
+// canvas) is remembered. 2026-10-17: 'card' is the default again (a review Ethan sent: "the sidebar has no edge... it
+// dissolves into the map"); the big year still floats on the map. New key, so a remembered 'float' does not hold it back.
 const LAYOUTS = ['float', 'card', 'column'];
 function setLayout(l, keep) {
-  if (!LAYOUTS.includes(l)) l = 'float';
+  if (!LAYOUTS.includes(l)) l = 'card';
   LAYOUTS.forEach(x => document.body.classList.toggle('lay-' + x, x === l));
-  if (keep) try { localStorage.setItem('aw.layout2', l); } catch {}
+  if (keep) try { localStorage.setItem('aw.layout3', l); } catch {}
   try { if (S.sel && S.byId[S.sel] && document.querySelector('#body .site-title')) renderSite(S.byId[S.sel]); } catch {}  // S is not yet made at load
   return l;
 }
-(() => { const u = new URLSearchParams(location.search).get('layout'); let v = null; try { v = localStorage.getItem('aw.layout2'); } catch {} setLayout(u || v || 'float', !!u); })();
+(() => { const u = new URLSearchParams(location.search).get('layout'); let v = null; try { v = localStorage.getItem('aw.layout3'); } catch {} setLayout(u || v || 'card', !!u); })();
 // where the map's open area starts at the left, past the panel (the layouts set --map-left)
 const mapLeft = () => parseFloat(getComputedStyle(document.body).getPropertyValue('--map-left')) || 400;
 function lsGet(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } }
 function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
-S.ground = lsGet('aw.ground', 'relief'); S.plateMode = lsGet('aw.plateMode', 'ink'); S.plateOpacity = lsGet('aw.plateOpacity', 0.85);
-S.dep = {}; S.depUrl = {}; S.depAlign = {}; S.alignStep = lsGet('aw.alignStep', 'fine'); S.drag = null; S.depSel = lsGet('aw.depSel', {}); S.depOpacity = lsGet('aw.depOpacity', 0.85); S.depMode = lsGet('aw.depMode', 'ink');
+S.ground = lsGet('aw.ground', 'relief'); S.plateMode = lsGet('aw.plateMode', 'ink'); S.plateOpacity = lsGet('aw.plateOpacity2', 1);  // full by default since 2026-10-17 (new key: old saves were 85%)
+S.dep = {}; S.depUrl = {}; S.depAlign = {}; S.alignStep = lsGet('aw.alignStep', 'fine'); S.drag = null; S.depSel = lsGet('aw.depSel', {}); S.depOpacity = lsGet('aw.depOpacity2', 1); S.depMode = lsGet('aw.depMode', 'ink');
 
 // The base map is the aerial photograph on the globe, all the way out. Ethan 2026-10-10: the old 4096 px world
 // picture "gets blurry and ugly" and "has no drip", and the photograph only came in about 50 km out; a plate-style
@@ -723,7 +877,7 @@ function ensureSite(site) {
   }
   if (site.plate) {
     const pc = alignedCorners(site);
-    map.addSource(`ink-${site.id}`, { type: 'image', url: base + site.plate.ink, coordinates: pc });
+    map.addSource(`ink-${site.id}`, { type: 'image', url: inkUrl(base + site.plate.ink), coordinates: pc });
     map.addSource(`paper-${site.id}`, { type: 'image', url: base + site.plate.paper, coordinates: pc });
     map.addLayer({ id: `paper-${site.id}`, type: 'raster', source: `paper-${site.id}`, paint });
     map.addLayer({ id: `ink-${site.id}`, type: 'raster', source: `ink-${site.id}`, paint });
@@ -780,7 +934,7 @@ function applyDep(s) {
   if (!d) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none'); if (B.site === s) syncBlock(); return; }
   // a survey sheet measured against today's ground (fit/sheetfit.py) shows its corrected copy when one was made
   const f = d.check && d.check.file ? d.check : d;
-  const url = `data/sites/${s.id}/${S.depMode === 'ink' && f.ink ? f.ink : f.file}`;
+  const url = S.depMode === 'ink' && f.ink ? inkUrl(`data/sites/${s.id}/${f.ink}`) : `data/sites/${s.id}/${f.file}`;
   const coordinates = shiftCorners(d.corners, S.depAlign[depKey(s, d)], s.lat);
   if (!map.getSource(id)) {
     map.addSource(id, { type: 'image', url, coordinates });
@@ -812,14 +966,14 @@ for (const [ev, fn] of [['mousedown', dragStart], ['touchstart', dragStart], ['m
 // the marker: a plumb bob (Ethan 2026-10-13: "I like Bob"; the surveyor's weight whose point marks the exact spot), tip at the
 // bottom, drawn in the 72x100 frame (x 14..86) and filled with the tier colour by the .pin rules
 const PIN = '<svg viewBox="14 0 72 100" aria-hidden="true"><path d="M40 1H60V13L82 31V42L50 99L18 42V31L40 13Z"/></svg>';
-const PIN_H = { t4: 19, t3: 17, t2: 15, t1: 13, plain: 10 }, PIN_W = { t4: 14, t3: 12, t2: 11, t1: 9, plain: 7 };  // px, as in the .marker.tN .sq rules
+const PIN_H = { t4: 27, t3: 21, t2: 17, t1: 14, plain: 11 }, PIN_W = { t4: 20, t3: 15, t2: 12, t1: 10, plain: 8 };  // px, as in the .marker.tN .sq rules
 const TIERS = [[2.5, 't4'], [1.6, 't3'], [1.2, 't2'], [0.01, 't1']];
 const tierOf = s => (TIERS.find(t => (s.score || 0) >= t[0]) || [0, 'plain'])[1];
 // zoom from which a tier's pins and names show (Ethan 2026-10-13: fully zoomed out only the best sites, more as the view fills;
 // Europe was one pile at the first view). Pins also hold back while a better pin is within PIN_GAP px (syncMarkers).
 const PIN_FROM = { t4: 0, t3: 3, t2: 4, t1: 5.5, plain: 7 };
 const LABEL_FROM = { t4: 0, t3: 3.5, t2: 5, t1: 7, plain: 9 };
-const PIN_GAP = [13, 17];  // px: closer than this, horizontally and vertically, and the lower-ranked pin waits for more zoom
+const PIN_GAP = [14, 19];  // px: closer than this, horizontally and vertically, and the lower-ranked pin waits for more zoom
 const markers = [];
 let syncMarkers = () => {};
 function shown(s) {  // on the map: scored sites, the rest only with More sites; the kind chips filter both
@@ -829,7 +983,7 @@ function addMarkers() {
   for (const s of S.sites) {
     const el = document.createElement('button');
     el.className = `marker ${tierOf(s)}`; el.type = 'button'; el.setAttribute('aria-label', `Open ${s.name}`);
-    el.innerHTML = `<span class="sq pin">${PIN}</span><span class="tag">${esc(s.name)}</span>`;
+    el.innerHTML = `<span class="sq pin">${PIN}</span><span class="tag">${esc(s.name)}${s.oldest ? `<small>${esc(String(s.oldest))}</small>` : ''}</span>`;
     el.addEventListener('click', e => { e.stopPropagation(); select(s.id); });
     // anchored at the pin's tip (the button's bottom centre) on the site's coordinate; the default offset would
     // lift the tip, so it is passed explicitly
@@ -854,8 +1008,8 @@ function addMarkers() {
       }
       if (vis) delete k.el.dataset.off; else k.el.dataset.off = '1';
     }
-    // the pin hangs above the tip (the point): the box covers the tallest 19 px pin plus its outline
-    const marks = on.map(k => { const p = pts.get(k); return [p.x - 8, p.y - 21, p.x + 8, p.y + 1, k]; });
+    // the pin hangs above the tip (the point): the box covers the pin plus its outline
+    const marks = on.map(k => { const p = pts.get(k), t = tierOf(S.byId[k.id]); return [p.x - PIN_W[t] / 2 - 1, p.y - PIN_H[t] - 2, p.x + PIN_W[t] / 2 + 1, p.y + 1, k]; });
     for (const k of on) {  // best first
       const s = S.byId[k.id], tag = k.el.querySelector('.tag'), p = pts.get(k);
       if (z < LABEL_FROM[tierOf(s)]) { k.el.dataset.tag = 'off'; continue; }
@@ -937,9 +1091,8 @@ function siteEntries() {
       <li>${siteRow(s, s.oldest ? String(s.oldest) : '', 'data-id')}</li>`).join('')}</ul>`).join('') + (cm.length ? `
     <p class="group-title">From the catalog <span>${cm.length === 40 ? 'first 40' : cm.length}</span></p>
     <ul class="legend-list">${cm.map(r => `
-      <li><button class="entry" data-cat="${esc(r.id)}">
-        <span class="swatch dot" style="background:${KGROUP[kindGroup(r.kind)][1]}"></span>
-        <span><span class="name">${esc(r.name)}</span><span class="desc">${esc([kindLabel(r.kind), r.place, r.region].filter(Boolean).join(', '))}</span></span>
+      <li><button class="entry srow" data-cat="${esc(r.id)}">
+        <span><span class="name">${esc(r.name)}</span><span class="desc">${esc([kindLabel(r.kind), r.place, r.region].filter(Boolean).join(', '))}</span></span><span class="yr"></span>
       </button></li>`).join('')}</ul>` : '');
 }
 // one site in a list: name over kind and place, the oldest overlay's year (or the distance) at the right
@@ -964,9 +1117,9 @@ function renderList() {
     ${S.tab === 'finder' ? finderHome() : `
     <p class="lede">${S.sites.filter(x => x.score > 0).length} ancient earthworks (hillforts, henges, mounds, Roman forts) as surveyors drew them 150 or more years ago, laid over today's ground. ${narrow() ? 'Tap' : 'Click'} a pin to see what is left.</p>
     <div class="tiers" aria-label="Marker key"><span class="sq pin t4">${PIN}</span><span class="sq pin t3">${PIN}</span><span class="sq pin t2">${PIN}</span><span class="sq pin t1">${PIN}</span><span>older, truer &rarr; newer, rougher</span>${S.more ? `<span class="sq pin plain">${PIN}</span><span>LiDAR or photo only</span>` : ''}</div>
-    <div class="kinds" role="group" aria-label="Kind of earthwork">
+    <div class="kinds" role="group" aria-label="Kind of earthwork" ${narrow() ? 'data-peek' : ''}>
       <button data-kind="all" aria-pressed="${C.kind === 'all'}">All</button>
-      ${Object.entries(KGROUP).map(([k, v]) => `<button data-kind="${k}" aria-pressed="${C.kind === k}"><i style="background:${v[1]}"></i>${esc(v[0])}</button>`).join('')}
+      ${Object.entries(KGROUP).map(([k, v]) => `<button data-kind="${k}" aria-pressed="${C.kind === k}">${esc(v[0])}</button>`).join('')}
     </div>
     <div class="search">
       <input id="q" type="search" placeholder="Search ${S.more ? (n + nc).toLocaleString() + ' sites' : 'sites'}" value="${esc(S.q)}" aria-label="Search sites">
@@ -1129,12 +1282,12 @@ function renderSite(s) {
   if ($('#fitgo')) $('#fitgo').onclick = () => startFit(s);
   const depMode = m => { S.depMode = m; lsSet('aw.depMode', m); applyDep(s); renderSite(s); if (B.open) setTab(true); };
   if ($('#d-ink')) { $('#d-ink').onclick = () => depMode('ink'); $('#d-paper').onclick = () => depMode('paper'); }
-  if ($('#dop')) $('#dop').oninput = e => { S.depOpacity = e.target.value / 100; $('#dopv').textContent = e.target.value + '%'; applyDep(s); lsSet('aw.depOpacity', S.depOpacity); };
+  if ($('#dop')) $('#dop').oninput = e => { S.depOpacity = e.target.value / 100; $('#dopv').textContent = e.target.value + '%'; applyDep(s); lsSet('aw.depOpacity2', S.depOpacity); };
   if (narrow()) wireLens(s); else deskScrub(s);
   if (dsel && $('#dsave')) wireAlign('d', () => S.depAlign[depKey(s, dsel)], a => { S.depAlign[depKey(s, dsel)] = a; }, () => applyDep(s),
     `depalign/${depKey(s, dsel)}`, 'Saved. This is now where the drawing sits for everyone.');
   if (!$('#op')) return;
-  $('#op').oninput = e => { S.plateOpacity = e.target.value / 100; $('#opv').textContent = e.target.value + '%'; applyAll(); lsSet('aw.plateOpacity', S.plateOpacity); };
+  $('#op').oninput = e => { S.plateOpacity = e.target.value / 100; $('#opv').textContent = e.target.value + '%'; applyAll(); lsSet('aw.plateOpacity2', S.plateOpacity); };
   $('#p-ink').onclick = () => setPlateMode('ink', s);
   $('#p-paper').onclick = () => setPlateMode('paper', s);
   if ($('#psave')) wireAlign('p', () => S.align[s.id], a => { S.align[s.id] = a; }, () => moveplate(s), `plates/${s.id}`, 'Saved. This is now the plate position for this site.');
@@ -1188,8 +1341,8 @@ $('#grab').onclick = () => narrow() ? sheetOpen(!$('#panel').classList.contains(
 /* ---------- phones: the sheet, the floating bar, the lens bar (time scrub + the past button) ----------
    Ethan 2026-10-15 picked "A + B" of the mockups (artifact 5DwCnWtZptRuvHrSDDKmnD): people should see a site through two
    lenses, the past and the present. Desktop is untouched: everything here runs only while narrow(). */
-// how much of the sheet shows at rest: down to the bottom of the view's [data-peek] part (the lens bar in a site, the search
-// row at home), else 42% of the screen
+// how much of the sheet shows at rest: down to the bottom of the view's [data-peek] part (the lens bar in a site, the kind
+// pills at home; the search row when there are none), else 42% of the screen
 function peekPx() {
   const p = $('#panel'), el = $('#body [data-peek]') || $('#body > .search');
   const pb = parseFloat(getComputedStyle(p).paddingBottom) || 0;
@@ -1230,7 +1383,7 @@ $('#body').addEventListener('focusin', e => { if (narrow() && e.target.id === 'q
   const p = $('#panel');
   let g = null, swiped = false;
   p.addEventListener('pointerdown', e => {
-    if (!narrow() || e.target.closest('.ys-ticks, input, textarea, select')) return;
+    if (!narrow() || e.target.closest('.ys-ticks, input, textarea, select, .kinds')) return;  // .kinds scrolls sideways
     const open = p.classList.contains('open');
     // open, only the handle and the peek part close it: the rest of the sheet scrolls
     if (open && !e.target.closest('.grab, [data-peek], #body > .search')) return;
@@ -1285,14 +1438,16 @@ const todayNote = s => S.ground === 'relief' && s.lidar !== false ? `pale raised
 function lensBar(s) {
   const stops = lensStops(s), n = stops.length - 1, at = restIndex(s, stops);
   const loading = !S.dep[s.id];
+  // the view switches first (Ethan 2026-10-17: "the controls to change what view is seen are buried underneath a scroll"),
+  // the year scrubber under them
   return `<div class="lensbar" data-peek>
-    ${n ? yearScrub(s, stops, at) : `<p class="track-none">${loading ? 'Loading the old maps…' : 'No old map of this site yet: only today\'s ground.'}</p>`}
     <div class="lrow"><div class="lchips">
       <button id="l-air" aria-pressed="${S.ground !== 'relief' || s.lidar === false}">Aerial</button>
       ${s.lidar !== false ? `<button id="l-rel" aria-pressed="${S.ground === 'relief'}">LiDAR</button>` : ''}
       <span class="gap"></span>${s.block ? `<button id="l-blk" aria-pressed="${B.open && B.site === s}">3D block</button>` : ''}
       <button id="l-past" class="lpast" aria-haspopup="dialog" aria-controls="mpop" aria-expanded="false" ${stops[at].kind === 'today' ? 'disabled' : ''}>${pastChip(stops[at])}</button>
     </div></div>
+    ${n ? yearScrub(s, stops, at) : `<p class="track-none">${loading ? 'Loading the old maps…' : 'No old map of this site yet: only today\'s ground.'}</p>`}
   </div>`;
 }
 // the closest other sites with an old overlay, for hopping on from this one
@@ -1319,7 +1474,7 @@ function wireLens(s) {
 const scrId = (s, d) => `scr-${s.id}-${(S.dep[s.id] || []).indexOf(d)}`;
 function depView(s, d) {
   const f = d.check && d.check.file ? d.check : d;
-  return { url: `data/sites/${s.id}/${S.depMode === 'ink' && f.ink ? f.ink : f.file}`, coordinates: shiftCorners(d.corners, S.depAlign[depKey(s, d)], s.lat) };
+  return { url: S.depMode === 'ink' && f.ink ? inkUrl(`data/sites/${s.id}/${f.ink}`) : `data/sites/${s.id}/${f.file}`, coordinates: shiftCorners(d.corners, S.depAlign[depKey(s, d)], s.lat) };
 }
 function ensureScrub(s) {
   if (!S.loaded.has(s.id)) return;
@@ -1484,8 +1639,8 @@ const pastOp = st => st.kind === 'plate' ? S.plateOpacity : S.depOpacity;
 const pastChip = st => st.kind === 'today' ? 'Old map' : `${pastMode(st) === 'ink' ? 'Ink' : 'Original'} <b>${Math.round(pastOp(st) * 100)}%</b>`;
 function setPastOp(s, st, v) {
   v = Math.round(Math.max(0, Math.min(1, v)) * 100) / 100;
-  if (st.kind === 'plate') { S.plateOpacity = v; lsSet('aw.plateOpacity', v); applyLayers(s); }
-  else { S.depOpacity = v; lsSet('aw.depOpacity', v); applyDep(s); }
+  if (st.kind === 'plate') { S.plateOpacity = v; lsSet('aw.plateOpacity2', v); applyLayers(s); }
+  else { S.depOpacity = v; lsSet('aw.depOpacity2', v); applyDep(s); }
   return v;
 }
 function pastPop(open) {
@@ -2180,7 +2335,7 @@ async function drapeCanvas(s) {
     if (map.getLayoutProperty(id, 'visibility') === 'none') continue;
     const src = map.getSource(id), op = map.getPaintProperty(id, 'raster-opacity') ?? 1;
     if (!src || !src.url || !src.coordinates || !(op > 0)) continue;
-    let im; try { im = await drapeImage(src.url); } catch { continue; }
+    let im; try { im = await drapeImage(src.url.replace(/^ink:\/\//, '')); } catch { continue; }  // the block thickens the plain ink itself (dilate)
     const [p0, p1, , p3] = src.coordinates.map(q => px(merc(q))), iw = im.naturalWidth, ih = im.naturalHeight;
     // the block is shrunk onto the screen, so hairline ink one texel wide fades to nothing (Arbor Low's plan
     // vanished): the layer is drawn at full strength with a 2-texel spread, then laid on at its opacity
