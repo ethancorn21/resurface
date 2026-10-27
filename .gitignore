@@ -7,7 +7,7 @@ __pycache__/
 data/scan/*/tiles/
 data/scan_*.log
 data/scan/
-# Finder output (unknown-site candidates) never leaves this Mac: looting / burial-site sensitivity
+# Finder output: local only, never commit
 web/data/scan/
 web/data/scans.json
 data/db/verdicts/
@@ -30,7 +30,7 @@ data/db/plan_fit.log
 data/commons/sheets/
 data/sites/*/dem_box.json
 data/sites/*/dem_credit.json
-# Amazon eye review (SFB concession LiDAR): Ethan 2026-10-10, never public. Tiles, index and marks stay on this Mac.
+# Amazon review data: local only, never commit
 web/data/amazon/
 data/db/marks/
 data/db/surveyseen/
