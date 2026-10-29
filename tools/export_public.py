@@ -1,6 +1,6 @@
 """Build the public, read-only copy of the site (resurface.ethanlawcorn.com) into dist/public/.
 
-usage: .venv/bin/python tools/export_public.py [--out dist/public]
+usage: .venv/bin/python tools/export_public.py [--out dist/public] [--no-pack]
 
 The LAN copy (server/serve.py) is the owner's: it writes fits, reviews and Finder marks. The public copy is static
 files only, so it carries none of that:
@@ -13,6 +13,9 @@ files only, so it carries none of that:
     every old map and drawing in depictions.json
   - data/align.json: the hand-saved plate and drawing nudges (data/db plates, depalign), read-only
   - config.js comes from deploy/config.js (gitignored: the Esri key) with public: true added
+  - no dev canvas (devkit.js and its tag): tuning happens on the local page, the live page carries none of it
+  - then tools/pack_public.py: minified code, content-named files under _/ cached for a year, _headers
+    (--no-pack leaves the copy readable, for debugging a build; never deploy it)
 
 Every old map and drawing is published. The maps are 150+ years old (OS six-inch 1840s-1900s, Roy 1747-55, TMK 1850,
 Cassini, Etat-major), so the works themselves are public domain, and a faithful scan of a public-domain 2D work adds no
@@ -52,6 +55,7 @@ def copy(src, dst):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--out", default=os.path.join(ROOT, "dist", "public"))
+    ap.add_argument("--no-pack", action="store_true", help="skip tools/pack_public.py (readable copy; not for deploy)")
     ap.add_argument("--relief", default=os.environ.get("RESURFACE_RELIEF"),
                     help="URL of the relief index (tools/prerender_relief.py pack); none = no relief between sites")
     a = ap.parse_args(argv)
@@ -63,13 +67,19 @@ def main(argv=None):
         shutil.rmtree(out)
     os.makedirs(out)
 
-    copy(os.path.join(WEB, "index.html"), os.path.join(out, "index.html"))
+    # the page without the dev canvas's tag (and its comment); the file itself is not copied below
+    with open(os.path.join(WEB, "index.html")) as f:
+        page = f.read()
+    page, n = re.subn(r'(?:<!--[^>]*-->\n)?<script src="devkit\.js"></script>\n?', "", page)
+    if n != 1:
+        sys.exit("the page no longer includes devkit.js exactly once: update the dev canvas strip in export_public.py")
+    with open(os.path.join(out, "index.html"), "w") as f:
+        f.write(page)
     # every local script the page includes (arrive.js, ...): read from the page itself, so a new one ships without
     # editing this list; config.js is written below, vendor/ copied whole. The owner tools are not <script src>
     # includes (the page injects them only when not public), so they never match.
-    with open(os.path.join(WEB, "index.html")) as f:
-        for src in sorted(set(re.findall(r'<script src="([^":/]+\.js)"', f.read())) - {"config.js"}):
-            copy(os.path.join(WEB, src), os.path.join(out, src))
+    for src in sorted(set(re.findall(r'<script src="([^":/]+\.js)"', page)) - {"config.js"}):
+        copy(os.path.join(WEB, src), os.path.join(out, src))
     copy(os.path.join(WEB, "arrive.js"), os.path.join(out, "arrive.js"))  # hand-off from the ethanlawcorn.com hub
     shutil.copytree(os.path.join(WEB, "vendor"), os.path.join(out, "vendor"))
     with open(cfg_src) as f:
@@ -133,6 +143,9 @@ def main(argv=None):
             build_site.marks(s, root=tmp)
     with open(os.path.join(out, "data", "sites.json"), "w") as f:
         json.dump(index, f, separators=(",", ":"))
+    if not a.no_pack:
+        import pack_public  # noqa: E402  (tools/, next to this file)
+        pack_public.pack(out)
 
     n_files = sum(len(fs) for _, _, fs in os.walk(out))
     size = sum(os.path.getsize(os.path.join(r, f)) for r, _, fs in os.walk(out) for f in fs)

@@ -196,3 +196,21 @@ The task id is the task file's number, with its letters for a subtask (e.g. 025a
 - **Clean-tree proof:** `git status --short` before and after the suite is empty (recorded at $TMPDIR/aw242-suite/pre-status.txt, the lane dies at the session boundary - this entry is the record); `sha256sum -c` of the ten PNGs against the pre-run hashes (the committed bytes) all OK. This is the external view of 813's in-test write-surface proof: an ordinary run leaves the pinned snapshot byte-identical.
 - **Why this closes the task rather than re-opening the chain:** both acceptance boxes of THIS file are met from this session's direct evidence (box 1: the fresh unflagged pair diffed against the committed snapshot - previous entry; box 2: this run). Every part of the chain is done and merged, so there is no owning task left to re-file a defect into; the flake-routing table in the hand-over stands for the future (the picks move with the queue, the re-pin command is named in the docs' 307d section). Nothing was fixed, weakened or deleted here - this task touches no product file.
 - **What the merged design now guarantees (for the waiters 230/241/236c, whose Depends names 242/810):** the 307d owner-check screenshots are a pinned snapshot (the ten committed PNGs); an ordinary suite run never writes them and proves it by hash; the captures are taken settled (isMoving() false + ~700 ms no-new-frame, 20 s budget) and double-shot (<0.5% at threshold 32), so a mid-transition regression fails the test in-run instead of dirtying the docs; a deliberate re-pin is `AW_OWNER_REFRESH=1` on the pair. The 28.6-33.6% saved/reload drift measured 2026-10-14 that motivated this task is not reproducible (box 1: 9/10 byte-identical, worst 0.0452%).
+
+## 2026-10-29 perf DECISION: load-speed pass on the public page (branch perf, not yet deployed)
+Ethan: "loaded faster, cache as much as possible, shrink payloads, load only what needs to be loaded, smoother". Measured on a
+local copy of the live build vs the new one, same throttled network (10 Mbit/s, 100 ms RTT; phone profile 4x CPU):
+first visit 1285 -> 591 kB from the site (panel 3.2 -> 1.1 s desktop, 5.1 -> 3.9 s phone); repeat visit 1285 -> 50 kB (every
+named file immutable under _/); opening Mayburgh 3.6 MB -> 0.28 MB; pin work per map frame 5.5-8 -> 0.3 ms (phone 24.6 -> 0.7);
+longest stall while a site opens 1.3 s -> 0.23 s on the phone. Screens pixel-identical before/after (home, site, relief, block).
+- Page: catalog.json (2 MB) fetched on first More sites / #c/ use (this also fixes #c/ links, which renderList used to
+  overwrite); three.js loaded when a block opens (warmed on pointer over the block button); the page starts at the style's
+  load, not 'load' (which waits ~3 s for every first Blue Marble tile); a site's relief.jpg only once the ground is relief;
+  neighbours only when their box is on screen (was every site within ~40 x 30 km); ink outlines drawn in a worker; hidden
+  pins detached (PITFALLS web/); Inter preloaded.
+- Export: no dev canvas on the live page (Ethan 2026-10-19 rule); tools/pack_public.py minifies (esbuild), inlines
+  fonts.css, content-hashes every named file into _/ and writes _headers.
+- Not done here, needs the Cloudflare dashboard: relief.ethanlawcorn.com answers cf-cache-status DYNAMIC with no
+  Cache-Control, so every relief tile range read goes to R2. The archive names are content hashes, so a Cache Rule
+  (eligible for cache, edge and browser TTL a year) is safe.
+
