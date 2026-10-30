@@ -8,6 +8,8 @@ What it does to the copy, in place:
     with esbuild (comments dropped, local names mangled; top-level names kept, because the page's classic scripts share
     one global scope). maplibre-gl and three.js ship already minified and are left as they are.
   - inlines vendor/fonts.css into the page (one request fewer before the first paint)
+  - splits the sites' summaries out of the page's copy of the site index (data/sites-text.json, fetched once the first
+    view is in) and rounds its coordinates to 7 decimals: half the index, and nothing the map or the list needs
   - moves every script, stylesheet, font and data index the page asks for by a fixed name into _/ under a content
     hash (_/maplibre-gl-5.6.0.3f9c1a2b7d.js), rewrites the page's references, and serves _/ as immutable: a returning
     visitor asks for nothing but the page itself until a file really changes
@@ -18,6 +20,7 @@ What it does to the copy, in place:
 esbuild: $ESBUILD, else esbuild on PATH, else the one wrangler installed in ../digitalgarden/node_modules, else npx.
 """
 import hashlib
+import json
 import os
 import re
 import shutil
@@ -34,11 +37,12 @@ HASHED = [
     ("vendor/maplibre-gl-5.6.0.css", "css"),
     ("vendor/pmtiles-3.2.1.js", "js"),
     ("vendor/three-r128.min.js", None),
+    ("data/sites-text.json", None),  # made by split_sites below
     ("data/sites.json", None),
     ("data/catalog.json", None),
     ("data/align.json", None),
 ]
-# kept under their plain names too: other pages may read the data indexes
+# kept under their plain names too: other pages may read the data indexes (the plain sites.json stays whole)
 KEEP_PLAIN = {"data/sites.json", "data/catalog.json"}
 
 HEADERS = """\
@@ -93,6 +97,29 @@ def refs(page, rel):
     return re.compile(r"(?<=[\"'(`])" + re.escape(rel) + r"(?=[\"'?)`])")
 
 
+def _round(o, nd=7):
+    """floats to nd decimals (7: about a centimetre in degrees): the corners were written with 15"""
+    if isinstance(o, float):
+        return round(o, nd)
+    if isinstance(o, list):
+        return [_round(x, nd) for x in o]
+    if isinstance(o, dict):
+        return {k: _round(v, nd) for k, v in o.items()}
+    return o
+
+
+def split_sites(out):
+    """the page's copy of the site index without the summaries (a third of it, and nothing the map or the list shows),
+    which go to data/sites-text.json, fetched later (the page's loadText); returns (index bytes, plain bytes)"""
+    with open(os.path.join(out, "data", "sites.json"), "rb") as f:
+        plain = f.read()
+    sites = json.loads(plain)["sites"]
+    text = {s["id"]: s.pop("summary") for s in sites if s.get("summary")}
+    dump = lambda o: json.dumps(o, ensure_ascii=False, separators=(",", ":")).encode()
+    put(out, "data/sites-text.json", dump(text))
+    return dump({"sites": _round(sites), "text": True}), plain
+
+
 def pack(out, esbuild=None):
     esbuild = esbuild or find_esbuild()
     page_path = os.path.join(out, "index.html")
@@ -129,6 +156,7 @@ def pack(out, esbuild=None):
 
     # the named files
     names = dict(font_names)
+    index, plain_sites = split_sites(out)
     for rel, loader in HASHED:
         p = os.path.join(out, rel)
         if not os.path.exists(p):
@@ -137,10 +165,13 @@ def pack(out, esbuild=None):
             data = f.read()
         if loader:
             data = minify(esbuild, data.decode(), loader).encode()
+        if rel == "data/sites.json":
+            data = index
         names[rel] = name = hashed_name(rel, data)
         put(out, name, data)
         if rel not in KEEP_PLAIN:
             os.remove(p)
+    put(out, "data/sites.json", plain_sites)
     for rel, name in names.items():
         page, n = refs(page, rel).subn(name, page)
         if not n and rel not in font_names:

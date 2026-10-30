@@ -214,3 +214,27 @@ longest stall while a site opens 1.3 s -> 0.23 s on the phone. Screens pixel-ide
   Cache-Control, so every relief tile range read goes to R2. The archive names are content hashes, so a Cache Rule
   (eligible for cache, edge and browser TTL a year) is safe.
 
+
+## 2026-10-30 perf DECISION: second pass, measured in a browser (still branch perf, not deployed)
+Ethan: "keep testing and experimenting until you can't get it any faster without sacrificing quality". Same throttled
+network vs the 10-29 pass: first visit painted 1.10 -> 0.69 s desktop, 3.40 -> 1.07 s phone; repeat 0.47 -> 0.34 s
+(phone 1.50 -> 0.84); opening Mayburgh 0.41 -> 0.23 s (phone 1.27 -> 0.55); Old Sarum's shown old map 2.6 -> ~1.2 s; first
+visit 591 -> 493 kB. Home, site and relief screens pixel-identical to the 10-29 build; Firefox and the LAN copy checked.
+- Pins: made on first show and attached only while shown (all 533 at boot cost ~150 ms on a phone, and two names with
+  Latin Extended letters fetched an 85 KB font for pins nobody saw); none before the style loads (a pin attached before the
+  globe's "terrain" event sat on half pixels: soft names).
+- sites.json fetched and parsed by a head script (SITES_ASKED): parsed in the page script it queued behind the globe's
+  first frames, ~0.9 s on a phone. The packed copy splits the summaries out (data/sites-text.json, after the first idle or
+  on opening a site) and rounds coordinates to 7 decimals: 146 -> 73 kB gz.
+- Opening a site: the scrubber's other maps load once the map is idle or the pointer reaches the scrubber (Old Sarum's
+  five fought the shown one for 1 MB); a pointer over a pin or row fetches the site's depictions.json.
+- Ink: same pixels (checked byte for byte, 5 sheets x 3 outline radii), ~2x faster: the max filter's column pass runs along
+  rows, line strength from a 256-entry table, and the worker hands MapLibre an ImageBitmap (no PNG encode and decode).
+- pmtiles and the relief index load at the first idle or the first relief tile.
+- Tried and dropped: one MapLibre worker instead of three (no measurable change); priming the shown sheet ahead of MapLibre's
+  image queue (the queue was not the wait).
+- Left for Ethan (each a trade-off or a dashboard change): ink alpha cut below 12% saves 14% of ink bytes with the map view
+  pixel-identical, but faint grain drops out of the 3D block's drape (which uses the raw sheet); also clamping above 57%
+  saves 32% but visibly boldens the block's ink. Cloudflare compresses static assets at a low level (MapLibre 247 kB br, 254
+  kB zstd, which Chrome gets); brotli 11 would cut first-visit text 439 -> 359 kB but needs a Worker serving precompressed
+  files. The relief Cache Rule from 10-29 is still open.
